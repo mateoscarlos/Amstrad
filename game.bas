@@ -1,45 +1,44 @@
 10 GOSUB 1000 : ' Init
-15 GOSUB 6000 : ' Menu display
+20 GOSUB 2000 : ' Menu display
 30 WHILE quit = 0
 40   GOSUB 3000 : ' Game loop
 50 WEND
 60 GOSUB 7000 ' End display
-65 CLS
-70 END
+70 CLS : END
 
 
-
-1000 ' Init
-1010 MODE 1
-1020 quit = 0
-1025 score = 0
-1026 apples = 0
-1027 level = 0
-1028 finalLevel = 2
-1030 x=20 : y=12
-1040 DIM map(40, 24)
-1050 SYMBOL AFTER 200
-1060 SYMBOL 240, &X100, &X1000, &X111100, &X1111110, &X11111111, &X11111111, &X1111110, &X111100
-1065 ' Display config
-1070 BORDER 0
-1080 INK 0,  0 :  ' Black background
-1090 INK 1, 22 :  ' Green walls
-1100 INK 2,  6 :  ' Red apples
-1110 INK 3, 26 :  ' White player
-1200 RETURN
+1000 '
+1010 ' Init
+1020 MODE 1
+1030 quit = 0
+1040 score = 0 : apples = 0
+1050 level = 0 : finalLevel = 2
+1060 x=20 : y=12
+1070 DIM map(40, 24)
+1080 ' Custom characters
+1085 ' Global vars:
+1086 ' CHR_PLAYER = 248 : CHR_WALL = 207 : CHR_APPLE = 240
+1087 ' APPLE_POINTS = 10
+1088 '
+1090 SYMBOL AFTER 200
+1100 SYMBOL 240, &X100, &X1000, &X111100, &X1111110, &X11111111, &X11111111, &X1111110, &X111100 ' Apple
+1110 ' TODO: More characters
+1120 '
+1170 ' Display config
+1180 BORDER 0
+1190 INK 0,  0 :  ' Black background
+1200 INK 1, 22 :  ' Green walls
+1210 INK 2,  6 :  ' Red apples
+1220 INK 3, 26 :  ' White player
+1500 RETURN
 
 
 2000 '
-2010 ' Set read values and map printing
-2015 CLS
-2020 FOR column=1 TO 24
-2030   FOR row=1 TO 40
-2040     READ map(row, column)
-2050     IF map(row, column) = 1 THEN LOCATE row, column : PEN 1 : PRINT CHR$(207);
-2060     IF map(row, column) = 2 THEN LOCATE row, column : PEN 2 : PRINT CHR$(240);
-2070   NEXT row
-2080 NEXT column
-2100 RETURN
+2010 'Main display
+2020 LOCATE 16, 9 : PRINT "THE GAME"
+2030 LOCATE 13, 14
+2040 input "Name: ", nickname$
+2500 RETURN
 
 
 3000 '
@@ -50,73 +49,89 @@
 3050 IF INKEY(61) <> -1 OR JOY(0) = 8 THEN LOCATE x, y: PRINT " " : x=x+1
 3060 IF INKEY(59) <> -1 OR JOY(0) = 1 THEN LOCATE x, y: PRINT " " : y=y-1
 3070 IF INKEY(60) <> -1 OR JOY(0) = 2 THEN LOCATE x, y: PRINT " " : y=y+1
-3080 IF INKEY(67) <> -1 THEN quit = 1 : GOSUB 4200 : ' Extra success sound / Crash  ' Q -> Quit
-3090 IF map(x, y) = 1 THEN quit = 1  : GOSUB 4200 : ' Extra success sound / Crash
-3100 IF map(x, y) = 2 THEN map(x, y) = 0 : score = score + 10 : apples = apples - 1 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 4000 : ' Success sound
-3980 RETURN
+3080 IF INKEY(67) <> -1 THEN quit = 1 : GOSUB 8200 : ' Q -> Quit
+3090 IF map(x, y) = 1 THEN quit = 1  : GOSUB 8200 : ' Crash against wall
+3100 IF map(x, y) = 2 THEN map(x, y) = 0 : score = score + 10 : apples = apples - 1 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8100 : ' Captures
+3500 RETURN
 
 
-3999 '
-4000 ' Success sound
-4020 ' Note values: C=1, D=2, E=3, F=4, G=5, A=6, B=7
-4050 FOR I=3 TO 5
-4070   SOUND 1, 30 + 20 * i, 5, 8
-4080 NEXT I
-4100 RETURN
+4000 '
+4010 ' Set read values and map printing
+4020 CLS
+4030 FOR row = 1 TO 24
+4040   FOR column = 1 TO 40
+4050     READ map(column, row)
+4060     IF map(column, row) = 1 THEN LOCATE column, row : PEN 1 : PRINT CHR$(207);
+4070     IF map(column, row) = 2 THEN LOCATE column, row : PEN 2 : PRINT CHR$(240);
+4080   NEXT column
+4090 NEXT row
+4100 LOCATE 1, 25 : PRINT "Score: "; score;
+4500 RETURN
 
 
-4200 ' Extra success sound
-4220 ' Note values: C=1, D=2, E=3, F=4, G=5, A=6, B=7
-4250 FOR I=7 TO 1 STEP -2
-4270   SOUND 1, 30 + 20 * i, 5, 8
-4280   SOUND 3, 30 + 20 * i, 5, 8
-4290 NEXT I
-4300 RETURN
-
-
-5000 ' Print next level
-5001 IF level = finalLevel THEN quit = 1: RETURN
-5002 x = 20 : y = 12
-5003 level = level + 1
-5006 GOSUB 6500 : ' Next level display
-5007 GOSUB 2000 : ' Set read values and map printing
-5008 RANDOMIZE TIME
-5010 apples = 1
-5020 xItem = 1 : yItem = 1
-5030 FOR i=1 TO apples
-5040   WHILE map(xItem, yItem) <> 0  ' Looking for a free position
-5045     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
-5047   WEND
-5050   LOCATE xItem, yItem : PEN 2 : PRINT CHR$(240); : map(xItem, yItem) = 2 : SOUND 1, 15, 15, 10
-5060 NEXT i
+5000 '
+5001 ' Print next level
+5002 IF level = finalLevel THEN quit = 1 : RETURN ' Game completed
+5003 x = 20 : y = 12
+5006 level = level + 1
+5007 GOSUB 6000 : ' Next level display
+5008 GOSUB 4000 : ' Set read values and map printing
+5010 RANDOMIZE TIME
+5020 apples = 1
+5030 xItem = 1 : yItem = 1
+5040 FOR i=1 TO apples
+5045   WHILE map(xItem, yItem) <> 0  ' Looking for a free position
+5047     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
+5050   WEND
+5060   LOCATE xItem, yItem : PEN 2 : PRINT CHR$(240); : map(xItem, yItem) = 2
+5070 NEXT i
 5500 RETURN
 
 
-6000 ' Main display
-6010 LOCATE 16, 9 : PRINT "THE GAME"
-6020 LOCATE 13, 12
-6030 input "Nickname: ", nickname$
+6000 '
+6010 ' Level display
+6020 FOR i=1 TO 1500: NEXT ' Sleep
+6030 CLS
+6040 LOCATE 16, 12 : PRINT "Level"; level
+6050 LOCATE 16, 15 : PRINT "Score: "; score
+6060 LOCATE 1, 23
+6070 FOR i=1 TO 2500: NEXT ' Sleep
 6100 RETURN
 
 
-6500 ' Level display
-6510 FOR i=1 TO 1500: NEXT ' Sleep
-6515 CLS
-6520 LOCATE 16, 12 : PRINT "Level"; level
-6540 LOCATE 16, 15 : PRINT "Score: "; score
-6540 LOCATE 1, 23
-6550 FOR i=1 TO 2500: NEXT ' Sleep
-6600 RETURN
-
-
-7000 ' End display
-7010 FOR i=1 TO 1500: NEXT ' Sleep
-7020 CLS
-7030 LOCATE 13, 10 : PRINT "G A M E  O V E R"
-7035 LOCATE 13, 14 : PRINT nickname$; " score: "; score
-7040 LOCATE 1, 23
-7050 FOR i=1 TO 3000: NEXT ' Sleep
+7000 '
+7010 ' End display
+7020 FOR i=1 TO 1000: NEXT ' Sleep
+7030 CLS
+7040 LOCATE 13, 10 : PRINT "G A M E  O V E R"
+7050 LOCATE 13, 14 : PRINT nickname$; " score: "; score
+7060 LOCATE 1, 23
+7070 FOR i=1 TO 3000: NEXT ' Sleep
 7100 RETURN
+
+
+8000 ' SONIDOS 8000
+8010 ' Note values: C=1, D=2, E=3, F=4, G=5, A=6, B=7
+
+8100 ' Success sound
+8120 FOR I=3 TO 5
+8130   SOUND 1, 30 + 20 * i, 5, 8
+8140 NEXT I
+8150 RETURN
+
+8200 ' Extra success sound
+8210 FOR I=7 TO 1 STEP -2
+8220   SOUND 1, 30 + 20 * i, 5, 8
+8230   SOUND 3, 30 + 20 * i, 5, 8
+8240 NEXT I
+8250 RETURN
+
+8300 ' Start sound
+8310 FOR i = 1 TO 7
+8320   SOUND 1, 20 + 10 * i, 5, 10
+8330   SOUND 3, 20 + 10 * i, 5, 10
+8340 NEXT i
+8350 END
 
 
 
