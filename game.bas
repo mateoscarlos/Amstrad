@@ -10,11 +10,11 @@
 1000 '
 1010 ' Init
 1020 MODE 1
-1030 quit = 0
-1040 score = 0 : points = 0
-1050 level = 0 : finalLevel = 3
-1060 x=20 : y=12
-1070 DIM map(40, 24)
+1030 DIM map(40, 24)
+1040 quit = 0
+1050 score = 0 : points = 0
+1060 level = 0 : finalLevel = 3
+1070 x=20 : y=12
 1080 ' Custom characters
 1090 ' Global vars:
 1100 ' CHR_PLAYER = 248 : CHR_WALL = 207 : CHR_APPLE = 240
@@ -22,15 +22,15 @@
 1120 '
 1130 SYMBOL AFTER 200
 1140 SYMBOL 240, &X100, &X1000, &X111100, &X1111110, &X11111111, &X11111111, &X1111110, &X111100 ' Apple
-1160 SYMBOL 241, &X00000000, &X00000000, &X00000000, &X00011000, &X00011000, &X00000000, &X00000000, &X00000000 ' Point
-1170 ' TODO: More characters
-1180 '
-1190 ' Display config
-1200 BORDER 0
-1210 INK 0,  0 :  ' Black background
-1220 INK 1, 22 :  ' Green walls
-1230 INK 2,  6 :  ' Red apples
-1240 INK 3, 26 :  ' White player / Points
+1150 SYMBOL 241, &X00000000, &X00000000, &X00000000, &X00011000, &X00011000, &X00000000, &X00000000, &X00000000 ' Point
+1160 ' TODO: More characters
+1170 '
+1180 ' Display config
+1190 BORDER 0
+1200 INK 0,  0 :  ' Black background
+1210 INK 1, 22 :  ' Green walls
+1220 INK 2,  6 :  ' Red apples
+1230 INK 3, 26 :  ' White player / Points
 1500 RETURN
 
 
@@ -54,32 +54,33 @@
 3080 IF INKEY(67) <> -1 THEN quit = 1 : GOSUB 8200 : ' Q -> Quit
 3090 IF map(x, y) = 1 THEN quit = 1  : GOSUB 8200 : ' Crash against wall
 3100 IF map(x, y) = 2 THEN map(x, y) = 0 : score = score + 10 : points = points - 1 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8100 : ' Get point
-3110 IF map(x, y) = 3 THEN map(x, y) = 0 : score = score + 20 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8100 : ' Captures apple
+3110 IF map(x, y) = 3 THEN map(x, y) = 0 : score = score + 20 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8400 : ' Captures apple
 3500 RETURN
 
 
 4000 '
 4010 ' Print next level
 4020 IF level = finalLevel THEN quit = 1 : RETURN ' Game completed
-4030 x = 20 : y = 12
-4040 level = level + 1
-4050 GOSUB 6000 : ' Next level display
-4060 GOSUB 5000 : ' Set read values and map printing
-4070 RANDOMIZE TIME
-4080 points = 7
-4090 xItem = 1 : yItem = 1
-4100 FOR i=1 TO points
-4110   WHILE map(xItem, yItem) <> 0  ' Looking for a free position
-4120     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
-4130   WEND
-4140   LOCATE xItem, yItem : PEN 3 : PRINT CHR$(241); : map(xItem, yItem) = 2
-4150 NEXT i
-4160 FOR i=1 TO INT(RND*level)+1
-4170   WHILE map(xItem, yItem) <> 0 ' Looking for a free position
-4180     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
-4190   WEND
-4200   LOCATE xItem, yItem : PEN 2 : PRINT CHR$(240); : map(xItem, yItem) = 3
-4210 NEXT i
+4030 GOSUB 8300
+4040 x = 20 : y = 12
+4050 level = level + 1
+4060 GOSUB 6000 : ' Next level display
+4070 GOSUB 5000 : ' Set read values and map printing
+4080 RANDOMIZE TIME
+4090 points = 7
+4100 xItem = 1 : yItem = 1
+4110 FOR i=1 TO points
+4120   WHILE map(xItem, yItem) <> 0  ' Looking for a free position
+4130     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
+4140   WEND
+4150   LOCATE xItem, yItem : PEN 3 : PRINT CHR$(241); : map(xItem, yItem) = 2
+4160 NEXT i
+4170 FOR i=1 TO INT(RND*level)
+4180   WHILE map(xItem, yItem) <> 0 ' Looking for a free position
+4190     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
+4200   WEND
+4210   LOCATE xItem, yItem : PEN 2 : PRINT CHR$(240); : map(xItem, yItem) = 3
+4220 NEXT i
 4500 RETURN
 
 
@@ -113,14 +114,22 @@
 7010 ' End display
 7020 FOR i=1 TO 1000: NEXT ' Sleep
 7030 CLS
-7040 LOCATE 13, 10 : PRINT "G A M E  O V E R"
-7050 LOCATE 13, 14 : PRINT nickname$; " score: "; score
-7060 LOCATE 1, 23
-7070 FOR i=1 TO 3000: NEXT ' Sleep
-7100 RETURN
+7040 LOCATE 13, 9 : PRINT "G A M E  O V E R"
+7050 LOCATE 13, 13 : PRINT nickname$; " score: "; score
+7060 LOCATE 13, 17 : PRINT "Play Again:  P"
+7070 LOCATE 13, 18 : PRINT "New game:    N"
+7080 LOCATE 13, 19 : PRINT "Exit:        Q"
+7090 WHILE INKEY$ <> "": WEND ' Waiting until there are no keys in the buffer
+7100 opt$ = INKEY$
+7110 WHILE opt$ = ""
+7120   opt$ = INKEY$
+7130 WEND
+7140 IF UPPER$(opt$) = "P" THEN quit = 0 : level = 0 : score = 0 : points = 0 : GOTO 30
+7150 IF UPPER$(opt$) = "N" THEN quit = 0 : GOTO 1050
+7500 RETURN
 
 
-8000 ' SONIDOS 8000
+8000 ' SOUNDS 8000
 8010 ' Note values: C=1, D=2, E=3, F=4, G=5, A=6, B=7
 
 8100 ' Success sound
@@ -137,10 +146,20 @@
 8250 RETURN
 
 8300 ' Start sound
-8310 FOR i = 1 TO 7
+8310 FOR i = 7 TO 1 STEP -1
 8320   SOUND 1, 20 + 10 * i, 5, 10
 8330   SOUND 3, 20 + 10 * i, 5, 10
 8340 NEXT i
+8350 RETURN
+
+8400 ' Apple eaten
+8410 FOR I=1 TO 3
+8420   SOUND 1, I*50+200, 10, 10
+8430   SOUND 2, I*60+200, 10, 10
+8440   SOUND 3, I*70+200, 10, 10
+8450 NEXT I
+8500 RETURN
+
 
 
 10000 ' Map 1
