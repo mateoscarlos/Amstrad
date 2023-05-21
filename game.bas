@@ -17,9 +17,12 @@
 1070 INK 2,  6 :  ' Red apples
 1080 INK 3, 26 :  ' White player / Points
 1090 DIM map(40, 24)
+1094 DIM scores(5) : FOR I=0 TO 5 : scores(I) = 0 : NEXT I
+1095 DIM users$(5) : FOR I=0 TO 5 : users$(I) = "" : NEXT I ' Top 4 users + current one
+1096 rounds = 0
 1100 quit = 0
 1110 score = 0 : points = 0 : lifes = 3
-1120 level = 0 : finalLevel = 4
+1120 level = 0 : finalLevel = 5
 1130 x=20 : y=12
 1140 ' Custom characters
 1150 ' Global vars:
@@ -41,6 +44,7 @@
 2040 LOCATE 16, 9 : PRINT "THE GAME"
 2050 LOCATE 13, 14
 2060 input "Name: ", nickname$
+2070 users$(rounds) = nickname$
 2500 RETURN
 
 
@@ -53,10 +57,10 @@
 3060 IF INKEY(60) <> -1 OR JOY(0) = 2 THEN LOCATE x, y: PRINT " " : y=y+1
 3070 IF INKEY(67) <> -1 THEN quit = 1 : GOSUB 8400 : ' Q -> Quit
 3080 LOCATE x, y : PEN 3 : PRINT CHR$(248)
-3090 IF map(x, y) = 1 THEN lifes = lifes - 1 : GOSUB 8600 : GOSUB 9000 : x=20 : y=12 : LOCATE x, y: PRINT CHR$(207)' Crash against wall
+3090 IF map(x, y) = 1 THEN lifes = lifes - 1 : GOSUB 8600 : GOSUB 9000 : x=20 : y=12 : LOCATE x, y: PRINT CHR$(207) ' Crash against wall
 3100 IF lifes < 0 THEN quit = 1 : GOSUB 8400
-3110 IF map(x, y) = 2 THEN map(x, y) = 0 : score = score + 10 : points = points - 1 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8100 : ' Get point
-3120 IF map(x, y) = 3 THEN map(x, y) = 0 : score = score + 20 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8200 : ' Captures apple
+3110 IF map(x, y) = 2 THEN map(x, y) = 0 : scores(rounds) = scores(rounds) + 10 : score = score + 10 : points = points - 1 : LOCATE 1, 25 : PRINT "Score: "; scores(rounds); : GOSUB 8100 : ' Get point
+3120 IF map(x, y) = 3 THEN map(x, y) = 0 : scores(rounds) = scores(rounds) + 20 : score = score + 20 : LOCATE 1, 25 : PRINT "Score: "; scores(rounds); : GOSUB 8200 : ' Captures apple
 3500 RETURN
 
 
@@ -69,7 +73,7 @@
 4060 GOSUB 6000 : ' Next level display
 4070 GOSUB 5000 : ' Set read values and map printing
 4080 RANDOMIZE TIME
-4090 points = 1
+4090 points = 2
 4100 xItem = 1 : yItem = 1
 4110 FOR i=1 TO points
 4120   WHILE map(xItem, yItem) <> 0  ' Looking for a free position
@@ -82,7 +86,7 @@
 4190     xItem = INT(RND*38) + 1 : yItem = INT(RND*22) + 1
 4200   WEND
 4210   LOCATE xItem, yItem : PEN 2 : PRINT CHR$(240); : map(xItem, yItem) = 3
-4220 NEXT i
+4220 NEXT I
 4500 RETURN
 
 
@@ -98,7 +102,7 @@
 5090     IF map(column, row) = 3 THEN LOCATE column, row : PEN 3 : PRINT CHR$(240);
 5100   NEXT column
 5110 NEXT row
-5120 PEN 3 : LOCATE 1, 25 : PRINT "Score: "; score;
+5120 PEN 3 : LOCATE 1, 25 : PRINT "Score: "; scores(rounds);
 5130 GOSUB 9000 ' Update lifes
 5500 RETURN
 
@@ -116,22 +120,38 @@
 7000 '
 7010 ' End display
 7020 RESTORE
-7030 FOR i=1 TO 1000: NEXT ' Sleep
+7030 FOR i=1 TO 1000: NEXT I ' Sleep
 7040 CLS
-7050 LOCATE 13, 9 : PRINT "G A M E  O V E R"
-7060 LOCATE 13, 13 : PRINT nickname$; " score: "; score
-7070 LOCATE 13, 17 : PRINT "Play Again:  P"
-7080 LOCATE 13, 18 : PRINT "New game:    N"
-7090 LOCATE 13, 19 : PRINT "Exit:        Q"
+7050 LOCATE 13,  7 : PRINT "G A M E  O V E R"
+7060 LOCATE 13, 10 : PRINT "Scores: "
+7065 GOSUB 7800
+7070 LOCATE 13, 22 : PRINT "Play Again:  P"
+7080 LOCATE 13, 23 : PRINT "New game:    N"
+7090 LOCATE 13, 24 : PRINT "Exit:        Q"
 7100 WHILE INKEY$ <> "": WEND ' Waiting until there are no keys in the buffer
 7110 opt$ = INKEY$
 7130 WHILE opt$ = ""
 7140   opt$ = INKEY$
 7150 WEND
-7160 IF UPPER$(opt$) = "P" THEN quit = 0 : level = 0 : score = 0 : points = 0 : lifes = 3 : GOTO 30
-7170 IF UPPER$(opt$) = "N" THEN quit = 0 : level = 0 : score = 0 : points = 0 : lifes = 3 : GOTO 20
+7160 IF UPPER$(opt$) = "P" THEN quit = 0 : level = 0 : score = 0 : points = 0 : lifes = 3 : rounds = rounds + 1 : users$(rounds) = nickname$ : GOTO 30
+7170 IF UPPER$(opt$) = "N" THEN quit = 0 : level = 0 : score = 0 : points = 0 : lifes = 3 : rounds = rounds + 1 : GOTO 20
 7500 RETURN
 
+
+7800 ' Print all the saved scores
+7810 FOR i = 0 TO 4
+7820   FOR j = 0 TO 3 - i
+7830     IF scores(j) < scores(j + 1) THEN
+7840       aux = scores(j) : scores(j) = scores(j+1)
+7850       scores(j+1) = aux
+7860     ENDIF
+7870   NEXT j
+7880 NEXT i
+7890 FOR I=0 to rounds
+7900   LOCATE 13, 12+I : PRINT users$(I);
+7910   LOCATE 25, 12+I : PRINT scores(I);
+7920 NEXT I
+7950 RETURN
 
 8000 ' SOUNDS 8000
 8010 ' Note values: C=1, D=2, E=3, F=4, G=5, A=6, B=7
@@ -284,3 +304,29 @@
 13220 DATA 1,0,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,0,1
 13230 DATA 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
 13240 DATA 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+
+14000 ' Map 5 (GPT 4)
+14010 DATA 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+14020 DATA 1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1
+14030 DATA 1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,1,1,1,0,1,1,1,0,1,0,1,1,1,1,1,0,1,0,0,1
+14040 DATA 1,0,1,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,1,0,0,1
+14050 DATA 1,0,1,1,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,0,1
+14060 DATA 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1
+14070 DATA 1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1
+14080 DATA 1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,0,1
+14090 DATA 1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1
+14100 DATA 1,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,1
+14110 DATA 1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1
+14120 DATA 1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,1
+14130 DATA 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1
+14140 DATA 1,0,0,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1
+14150 DATA 1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,0,1
+14160 DATA 1,0,1,0,0,0,1,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,1,0,0,1
+14170 DATA 1,0,1,0,1,0,1,0,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1
+14180 DATA 1,0,1,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,0,1
+14190 DATA 1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1
+14200 DATA 1,0,1,0,0,0,0,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,1,0,1,0,0,0,0,0,1,0,0,1
+14210 DATA 1,0,1,1,1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,1,0,1,0,1,1,1,0,1,0,0,1
+14220 DATA 1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,1
+14230 DATA 1,0,1,1,1,1,0,1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,0,1
+14240 DATA 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
