@@ -47,15 +47,16 @@
 3000 '
 3010 ' Game loop
 3020 IF points = 0 THEN GOSUB 4000 : ' Next level
-3030 LOCATE x, y : PEN 3 : PRINT CHR$(248)
-3040 IF INKEY(69) <> -1 OR JOY(0) = 4 THEN LOCATE x, y: PRINT " " : x=x-1
-3050 IF INKEY(61) <> -1 OR JOY(0) = 8 THEN LOCATE x, y: PRINT " " : x=x+1
-3060 IF INKEY(59) <> -1 OR JOY(0) = 1 THEN LOCATE x, y: PRINT " " : y=y-1
-3070 IF INKEY(60) <> -1 OR JOY(0) = 2 THEN LOCATE x, y: PRINT " " : y=y+1
-3080 IF INKEY(67) <> -1 THEN quit = 1 : GOSUB 8400 : ' Q -> Quit
-3090 IF map(x, y) = 1 THEN lifes = lifes - 1 : IF lifes = 0 THEN quit = 1 : GOSUB 8400 : ELSE GOSUB 9000 ' Update lifes ' Crash against wall
-3100 IF map(x, y) = 2 THEN map(x, y) = 0 : score = score + 10 : points = points - 1 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8100 : ' Get point
-3110 IF map(x, y) = 3 THEN map(x, y) = 0 : score = score + 20 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8200 : ' Captures apple
+3030 IF INKEY(69) <> -1 OR JOY(0) = 4 THEN LOCATE x, y: PRINT " " : x=x-1
+3040 IF INKEY(61) <> -1 OR JOY(0) = 8 THEN LOCATE x, y: PRINT " " : x=x+1
+3050 IF INKEY(59) <> -1 OR JOY(0) = 1 THEN LOCATE x, y: PRINT " " : y=y-1
+3060 IF INKEY(60) <> -1 OR JOY(0) = 2 THEN LOCATE x, y: PRINT " " : y=y+1
+3070 IF INKEY(67) <> -1 THEN quit = 1 : GOSUB 8400 : ' Q -> Quit
+3080 LOCATE x, y : PEN 3 : PRINT CHR$(248)
+3090 IF map(x, y) = 1 THEN lifes = lifes - 1 : GOSUB 8600 : GOSUB 9000 : x=20 : y=12 : LOCATE x, y: PRINT CHR$(207)' Crash against wall
+3100 IF lifes < 0 THEN quit = 1 : GOSUB 8400
+3110 IF map(x, y) = 2 THEN map(x, y) = 0 : score = score + 10 : points = points - 1 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8100 : ' Get point
+3120 IF map(x, y) = 3 THEN map(x, y) = 0 : score = score + 20 : LOCATE 1, 25 : PRINT "Score: "; score; : GOSUB 8200 : ' Captures apple
 3500 RETURN
 
 
@@ -162,6 +163,13 @@
 8440   SOUND 3, I*70+200, 10, 10
 8450 NEXT I
 8500 RETURN
+
+8600 ' Life left
+8610 FOR I=1 TO 3
+8620  SOUND 1, I*100 + 100, 5, 8
+8630  SOUND 3, I*100 + 100, 5, 8
+8650 NEXT I
+8660 RETURN
 
 
 9000 '
