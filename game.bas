@@ -20,6 +20,7 @@
 1094 DIM scores(5) : FOR I=0 TO 5 : scores(I) = 0 : NEXT I
 1095 DIM users$(5) : FOR I=0 TO 5 : users$(I) = "" : NEXT I ' Top 4 users + current one
 1096 rounds = 0
+1097 currentRound = 0
 1100 quit = 0
 1110 score = 0 : points = 0 : lifes = 3
 1120 level = 0 : finalLevel = 5
@@ -139,14 +140,6 @@
 
 
 7800 ' Print all the saved scores
-7810 FOR i = 0 TO 4
-7820   FOR j = 0 TO 3 - i
-7830     IF scores(j) < scores(j + 1) THEN
-7840       aux = scores(j) : scores(j) = scores(j+1)
-7850       scores(j+1) = aux
-7860     ENDIF
-7870   NEXT j
-7880 NEXT i
 7890 FOR I=0 to rounds
 7900   LOCATE 13, 12+I : PRINT users$(I);
 7910   LOCATE 25, 12+I : PRINT scores(I);
