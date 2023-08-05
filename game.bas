@@ -74,7 +74,7 @@
 4060 GOSUB 6000 : ' Next level display
 4070 GOSUB 5000 : ' Set read values and map printing
 4080 RANDOMIZE TIME
-4090 points = 2
+4090 points = 8
 4100 xItem = 1 : yItem = 1
 4110 FOR i=1 TO points
 4120   WHILE map(xItem, yItem) <> 0  ' Looking for a free position
